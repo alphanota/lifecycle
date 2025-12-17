@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/buildpacks/imgutil/layout/sparse"
 	"github.com/google/go-containerregistry/pkg/authn"
 	v1 "github.com/google/go-containerregistry/pkg/v1"
 	"github.com/google/go-containerregistry/pkg/v1/layout"
 	"github.com/google/go-containerregistry/pkg/v1/remote"
+	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 
@@ -105,10 +105,8 @@ func testExtenderFunc(platformAPI string) func(t *testing.T, when spec.G, it spe
 				baseCacheDir := filepath.Join(kanikoDir, "cache", "base")
 				h.AssertNil(t, os.MkdirAll(baseCacheDir, 0755))
 
-				// write sparse image
-				layoutImage, err := sparse.NewImage(filepath.Join(baseCacheDir, baseImageDigest), remoteImage)
-				h.AssertNil(t, err)
-				h.AssertNil(t, layoutImage.Save())
+				// write tarball image
+				h.AssertNil(t, tarball.WriteToFile(filepath.Join(baseCacheDir, baseImageDigest), ref, remoteImage))
 
 				// write image reference in analyzed.toml
 				analyzedMD := files.Analyzed{
